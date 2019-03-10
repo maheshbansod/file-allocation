@@ -36,11 +36,13 @@ int addFile(Dent *dent, int len) {
 	bitvector[i]=0;
 	len--;
 	
+	printf("%d->",i);
 	j=i+1;
 	while(j<n && len > 0) {
 		if(bitvector[j]==1) {
 			bitvector[j]=0;
 			mem[i] = j; //set next pointer
+			printf("%d->", j);
 			i=j;
 			len--;
 		}
@@ -58,10 +60,55 @@ int addFile(Dent *dent, int len) {
 	return 1;
 }
 
+void deleteFile(char *fname) {
+	int i,j,len=0;
+	Dent *temp = dir, *par = NULL;
+	
+	printf("'%s'", fname);
+	//find the node
+	while(temp != NULL) {
+		if(strcmp(temp->fname, fname)==0) break;
+		par = temp;
+		temp = temp->next;
+	}
+	if(temp == NULL) {
+		printf("File with that name was not found.\n");
+		return;
+	}
+
+	//update bitvector and mem
+	i=temp->st;
+	printf("%d->",i);
+	do {
+		bitvector[i]=1;
+		j=mem[i];
+		mem[i]=-1;
+		printf("%d->",j);
+		i=j;
+		len++;
+	} while(i != -1);
+
+	//update free
+	freen -= len;
+
+	//update dir
+	if(par == NULL) {
+		dir = dir->next;
+	} else {
+		par->next = temp->next;
+	}
+	if(temp == last) last = par;
+
+	free(temp);
+
+	printf("%d blocks freed.\n", len);
+}
+
 int main() {
 
 	Dent *tdent = NULL;
 	int choice,i,len;
+	char str[100];
 
 	printf("Enter size of memory/no. of blocks: ");
 	scanf("%d", &n);
@@ -104,12 +151,17 @@ int main() {
 				printf("|%10s|%14d|%13d|\n",tdent->fname, tdent->st, tdent->last);
 				tdent = tdent->next;
 			}
-			printf("+------------------------------+\n");
+			printf("+---------------------------------------+\n");
 			break;
 		case 4:
+			printf("Enter file name to delete: ");
+			getchar();
+			fgets(str, 100, stdin);
+			str[strlen(str)-1]='\0'; //get rid of unecessary '\n'
+			deleteFile(str);
 			break;
 		case 0:
-			printf("Exit");
+			printf("Exit\n");
 			break;
 		default: printf("Invalid choice\n");
 			break;
